@@ -1,60 +1,63 @@
 const express = require('express');
-const sqlite3 = require('sqlite3').verbose();
+const { createClient } = require('@libsql/client');
 const app = express();
 
 app.use(express.json());
 app.use(express.static('.'));
 
 // Tạo hoặc mở file database
-const db = new sqlite3.Database('games.db');
+const db = createClient({
+  url: 'file:games.db'
+});
 
 // Tạo bảng nếu chưa có
-db.run(`
-  CREATE TABLE IF NOT EXISTS games (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    status TEXT DEFAULT 'muon-choi'
-  )
-`);
+async function init() {
+  await db.execute(`
+    CREATE TABLE IF NOT EXISTS games (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      status TEXT DEFAULT 'muon-choi'
+    )
+  `);
+}
 
 // API lấy danh sách game
-app.get('/api/games', function(req, res) {
-  db.all('SELECT * FROM games', function(err, rows) {
-    res.json(rows);
-  });
+app.get('/api/games', async function(req, res) {
+  const result = await db.execute('SELECT * FROM games');
+  res.json(result.rows);
 });
 
 // API thêm game mới
-app.post('/api/games', function(req, res) {
+app.post('/api/games', async function(req, res) {
   const { name, status } = req.body;
-  db.run(
-    'INSERT INTO games (name, status) VALUES (?, ?)',
-    [name, status || 'muon-choi'],
-    function(err) {
-      res.json({ id: this.lastID, name, status: status || 'muon-choi' });
-    }
-  );
+  const result = await db.execute({
+    sql: 'INSERT INTO games (name, status) VALUES (?, ?)',
+    args: [name, status || 'muon-choi']
+  });
+  res.json({ id: Number(result.lastInsertRowid), name, status: status || 'muon-choi' });
 });
 
 // API xóa game
-app.delete('/api/games/:id', function(req, res) {
-  db.run('DELETE FROM games WHERE id = ?', [req.params.id], function(err) {
-    res.json({ success: true });
+app.delete('/api/games/:id', async function(req, res) {
+  await db.execute({
+    sql: 'DELETE FROM games WHERE id = ?',
+    args: [req.params.id]
   });
+  res.json({ success: true });
 });
 
 // API cập nhật trạng thái
-app.put('/api/games/:id', function(req, res) {
+app.put('/api/games/:id', async function(req, res) {
   const { status } = req.body;
-  db.run(
-    'UPDATE games SET status = ? WHERE id = ?',
-    [status, req.params.id],
-    function(err) {
-      res.json({ success: true });
-    }
-  );
+  await db.execute({
+    sql: 'UPDATE games SET status = ? WHERE id = ?',
+    args: [status, req.params.id]
+  });
+  res.json({ success: true });
 });
 
-app.listen(3000, function() {
-  console.log('Server đang chạy tại http://localhost:3000');
+init().then(function() {
+  app.listen(3000, function() {
+    console.log('Server đang chạy tại http://localhost:3000');
+  });
 });
