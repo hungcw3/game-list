@@ -21,7 +21,5 @@ git clone https://github.com/hungcw3/game-list.git
 2. Cài dependencies:
 npm install
 3. Chạy server:
-git add .
-git commit -m "add README"
-git push
+node server.js
 4. Mở trình duyệt tại `http://localhost:3000`
