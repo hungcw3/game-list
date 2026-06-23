@@ -8,14 +8,31 @@
 </head>
 <body>
 
-  <h1>Danh Sách Game Của Tôi</h1>
+  <!-- Trang đăng nhập / đăng ký -->
+  <div id="auth-page">
+    <h1>🎮 Game List</h1>
 
-  <form id="game-form">
-    <input type="text" id="game-name" placeholder="Tên game..." />
-    <button type="submit">Thêm game</button>
-  </form>
+    <div id="auth-form">
+      <input type="email" id="auth-email" placeholder="Email..." />
+      <input type="password" id="auth-password" placeholder="Password..." />
+      <button id="login-btn">Đăng nhập</button>
+      <button id="register-btn">Đăng ký</button>
+      <p id="auth-error"></p>
+    </div>
+  </div>
 
-  <ul id="game-list"></ul>
+  <!-- Trang danh sách game -->
+  <div id="main-page" style="display:none">
+    <h1>🎮 Danh Sách Game Của Tôi</h1>
+    <button id="logout-btn">Đăng xuất</button>
+
+    <form id="game-form">
+      <input type="text" id="game-name" placeholder="Tên game..." />
+      <button type="submit">Thêm game</button>
+    </form>
+
+    <ul id="game-list"></ul>
+  </div>
 
   <script src="script.js"></script>
 </body>
